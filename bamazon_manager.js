@@ -1,45 +1,44 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var arrProduct = ["Exit"];
-var newStockQuantity = 0;
-var productPrice = 0;
-var purchaseCost = 0;
-var orderQuantity = 0;
-var currentProduct;
 var inStock = 0;
+var productPrice = 0;
+var orderQuantity = 0;
+var newStockQuantity = 0;
+var currentProduct;
+var purchaseCost = 0;
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
   
+    // Your username
     user: "root",
-
+  
+    // Your password
     password: process.argv[2],
     database: "bamazon_db"
   });
   connection.connect(function(err) {
     if (err) throw err;
-
+    //inventory();
     productChoices();
   });
 function inventory(){
     inquirer.prompt({
         name: "menu",
         type: "list",
-        message: "Choose from options below:",
+        message: "Choose from Menu Options below:",
         choices: [
-            "Add New Product",
-            "View Products",
+            "View Products for Sale",
             "View Low Inventory",
-            "Add to Inventory", 
+            "Add to Inventory",
+            "Add New Product",
             "Exit"
                 ]
     }).then(function(answer){
         console.log(answer.menu);
         switch (answer.menu) {
-            case "Add New Product":
-                addProduct();
-                break;
-            case "View Products":
+            case "View Products for Sale":
                 productsForSale();
                 break;
       
@@ -49,6 +48,10 @@ function inventory(){
       
             case "Add to Inventory":
                 addInventory();
+                break;
+      
+            case "Add New Product":
+                addProduct();
                 break;
             case "Exit":
                 connection.end();
@@ -85,7 +88,7 @@ function addInventory() {
     inquirer.prompt({
         name: "name",
         type: "list",
-        message: "\nWhich product should be re-stocked?",
+        message: "\nWhich product should be restocked?",
         choices: arrProduct
     }).then(function(answer){
           var query = "SELECT item_id, product_name, price, stock_quantity FROM products";
@@ -123,7 +126,9 @@ function updateQuantity(){
       ],
       function(err,res) {
         if (err) throw err;
+        console.log("\n=====================");
         console.log("New Stock Quantity: " + newStockQuantity + " for " + currentProduct);
+        console.log("=====================");
       })
         inventory();
     });
@@ -131,6 +136,7 @@ function updateQuantity(){
 
 function productChoices(){
     var query = "SELECT product_name FROM products";
+        //console.log("Query: " + query);
         connection.query(query, function(err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
@@ -148,12 +154,12 @@ function addProduct(){
     {
         name: "department_name",
         type: "input",
-        message: "\nWhich department is this located at?"
+        message: "\nWhich department will this be located?"
     },
     {
         name: "price",
         type: "input",
-        message: "\nWhat is the sale price?",
+        message: "\nWhat will be the sale price?",
         validate: function(value) {
             if(isNaN(value)===false){
                 return true;
@@ -164,7 +170,7 @@ function addProduct(){
     {
         name: "stock_quantity",
         type: "input",
-        message: "\nHow many should be stocked?",
+        message: "\nHow many show be stocked?",
         validate: function(value){
             if(isNaN(value)===false){
                 return true;

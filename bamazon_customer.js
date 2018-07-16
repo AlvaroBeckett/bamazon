@@ -2,18 +2,20 @@ require('dotenv').config();
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var arrProduct = ["Exit"];
-var newStockQuantity = 0;
-var productPrice = 0;
-var purchaseCost = 0;
-var orderQuantity = 0;
-var currentProduct;
 var inStock = 0;
+var productPrice = 0;
+var orderQuantity = 0;
+var newStockQuantity = 0;
+var currentProduct;
+var purchaseCost = 0;
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
   
+    // Your username
     user: "root",
   
+    // Your password
     password: process.argv[2],
     database: "bamazon_db"
   });
@@ -25,7 +27,7 @@ var connection = mysql.createConnection({
       inquirer.prompt({
           name: "name",
           type: "list",
-          message: "What would you like to buy? If you want to exit please choose EXIT",
+          message: "What would you like to purchase or choose Exit to leave Bamazon?",
           choices: arrProduct
       }).then(function(answer){
             var query = "SELECT item_id, product_name, price, stock_quantity FROM products";
@@ -46,13 +48,13 @@ var connection = mysql.createConnection({
   }
 function productChoices(){
     var query = "SELECT product_name FROM products";
-
+        //console.log("Query: " + query);
         connection.query(query, function(err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
             arrProduct.unshift(res[i].product_name);
         }
-
+        //console.log(arrProduct);
         runSearch();
         })
        
@@ -66,11 +68,11 @@ function quantityCheck(){
                 orderQuantity = answer1.quantity;
                 if(inStock>=orderQuantity){
                     console.log("====================="); 
-                    console.log("Thank you for choosing Bamazon!");
+                    console.log("Thank you for your business!");
                     newStockQuantity = inStock-orderQuantity;
                     updateProduct();
             }else{
-                console.log("Sorry we are out of stock");
+                console.log("Sorry we have insufficient inventory");
                 productChoices();
             }
     })
@@ -89,7 +91,7 @@ function updateProduct() {
       function(err,res) {
         if (err) throw err;
         purchaseCost = orderQuantity * productPrice;
-        console.log("Cost: $"+purchaseCost.toFixed(2) + " for " + orderQuantity + " " + currentProduct);
+        console.log("Order Cost: $"+purchaseCost.toFixed(2) + " for " + orderQuantity + " " + currentProduct);
         console.log("=====================");
         console.log("New Stock Quantity: " + newStockQuantity + " for " + currentProduct);
         productChoices();
